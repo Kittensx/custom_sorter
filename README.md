@@ -21,14 +21,14 @@ The Custom Sorter Program is a Python-based file organization tool designed to s
 
 ### Steps
 1. Clone or download the repository.
-  git clone https://github.com/Kittensx/custom_sorter
+  - git clone https://github.com/Kittensx/custom_sorter
 	
 
 2. Open a terminal and/or navigate to the project directory.
-  cd custom_sorter
+  - cd custom_sorter
 	
 3. Run the installer script:   
-  python install_cs.py
+- python install_cs.py
    
 4. The script will:
   Create a virtual environment (venv).
@@ -38,15 +38,15 @@ The Custom Sorter Program is a Python-based file organization tool designed to s
 ## Usage
 ### Running the Program
 1. Execute the batch file:
-  cs.run.bat
+  - cs.run.bat
 
 This will:
-  Activate the virtual environment.
-  Run the custom_sorter.py script.
-  Use the configuration specified in custom_sorter_config.yaml. 
+  - Activate the virtual environment.
+  - Run the custom_sorter.py script.
+  - Use the configuration specified in custom_sorter_config.yaml. 
 
 2. Alternatively, run the script directly:
-  python custom_sorter.py
+- python custom_sorter.py
 
 ## Configuration
 The program reads settings from the custom_sorter_config.yaml file. Below is an example configuration:
