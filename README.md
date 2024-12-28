@@ -21,7 +21,7 @@ The Custom Sorter Program is a Python-based file organization tool designed to s
 
 ### Steps
 1. Clone or download the repository.
-  git clone https://github.com/yourusername/custom_sorter.git
+  git clone https://github.com/Kittensx/custom_sorter
 	
 
 2. Open a terminal and/or navigate to the project directory.
