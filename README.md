@@ -51,28 +51,16 @@ This will:
 ## Configuration
 The program reads settings from the custom_sorter_config.yaml file. Below is an example configuration:
 
-input_folders:
-  - 'test_input'  # Specify input folders here
-output_folder: "test_output"  # Output folder
-use_output_folder: true  # True: Sort files into the output folder; False: Organize in place
-resolution_folders:
-  superlow: "0x0"
-  lores: "512x512"
-  medres: "640x960"
-  hires: "1080x1920"
-  superhigh: "99999x99999"
-sort_method: resolution  # Options: resolution, orientation
-dynamic_thresholds: false  # Enable dynamic categories for "superlow" and "superhigh"
 
 ### Configuration Options
-input_folders: List of folders to process.
-output_folder: Destination folder for sorted files.
-use_output_folder: Set to false to organize files within the input folder.
-resolution_folders: Define custom folder names and resolution thresholds.
-sort_method:
-  resolution: Sort by image resolution.
-  orientation: Categorize into portrait, landscape, or square.
-dynamic_thresholds: Automatically handle resolutions outside defined thresholds.
+1. input_folders: List of folders to process.
+2. output_folder: Destination folder for sorted files.
+3. use_output_folder: Set to false to organize files within the input folder.
+4. resolution_folders: Define custom folder names and resolution thresholds.
+5. sort_method:
+  **resolution: Sort by image resolution.**
+  **orientation: Categorize into portrait, landscape, or square.**
+6. dynamic_thresholds: Automatically handle resolutions outside defined thresholds.
 
 ## Features
 ### Sorting
@@ -89,19 +77,6 @@ Automatically retry failed operations.
 Cleans up empty input folders.
 Compares input and output folders to remove duplicates.
 
-## Project Structure
-custom_sorter/
-├── scripts/
-│   ├── cs_queue.py             # Handles file operations and retries
-│   ├── post_processing_manager.py  # Post-processing tasks like cleanup
-├── test_input/                 # Sample input files
-├── test_output/                # Sample output folder (generated after running)
-├── custom_sorter.py            # Main sorting script
-├── custom_sorter_config.yaml   # Configuration file
-├── install_cs.py               # Installer script
-├── requirements.txt            # Python dependencies
-├── cs_run.bat                  # Auto-generated batch file
-├── README.md                   # Documentation file
 
 ## Screenshots
 Sample run organized **input** folder
