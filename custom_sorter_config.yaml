@@ -15,7 +15,7 @@ output_folder: "test_output"
 # Whether to move files to the output folder or organize them in place.
 # Options:
 # - true: Files are moved to the output folder.
-# - false: Files are sorted within their original locations.
+# - false: Files are sorted within their original locations. READ FIRST.MD has important information please read before changing this to false.
 use_output_folder: true
 
 # Resolution-based folder categories. Each key defines a folder, and its value specifies the maximum resolution (width x height) for that folder.
