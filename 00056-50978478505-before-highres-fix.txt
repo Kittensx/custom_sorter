@@ -1,3 +1,0 @@
-background:: {sand, {sunset:beach::footprints;}, sky::gray|blue|purple_clouds;}_;, foreground:: looking for seashells_;,
-Negative prompt: island, city, splitframe, tilt, ball,
-Steps: 30, Sampler: DPM++ 2M, Schedule type: Karras Exponential, CFG scale: 7, Seed: 50978478505, Size: 350x512, Model hash: 989b125599, Model: Qasar_anireal, Denoising strength: 0.4, Clip skip: 2, Hypertile U-Net: True, Hires upscale: 2, Hires steps: 30, Hires upscaler: 8x_NMKD-Superscale_150000_G, Version: v1.10.1, Hashes: {"model": "989b125599"}

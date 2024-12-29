@@ -1,3 +1,0 @@
-white_background, cat
-Negative prompt: watermark, muscular, different_eyes::color;, child, female,
-Steps: 20, Sampler: DPM++ 2M, Schedule type: Karras, CFG scale: 7, Seed: 93365066040, Size: 640x960, Model hash: 86758142da, Model: FusionX-Realistic_v3_float16, Denoising strength: 0.4, Clip skip: 2, Hypertile U-Net: True, Hires upscale: 2, Hires steps: 20, Hires upscaler: 8x_NMKD-Superscale_150000_G, Version: v1.10.1, Hashes: {"model": "86758142da"}
