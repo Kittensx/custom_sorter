@@ -1,0 +1,9 @@
+DISCLAIMER
+
+This program is provided "as is" without any guarantees or warranties. By using this program, you agree that the creator is not responsible for any unintended changes, file loss, or misorganization that may occur as a result of incorrect configurations or usage.
+
+Before using the program, it is strongly recommended to carefully review your configuration file (`custom_sorter_config.yaml`) and test the program on a small sample of files in a separate directory. 
+
+DO NOT use this program on important or irreplaceable files without proper backups.
+
+For critical details and known issues, please refer to the `read_first.md` file included with this program. The document contains information about current limitations and workarounds, including issues with same-folder configurations that are actively being worked on.
