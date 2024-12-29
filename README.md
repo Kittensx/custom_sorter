@@ -58,16 +58,13 @@ The program reads settings from the custom_sorter_config.yaml file. Below is an 
 3. use_output_folder: Set to false to organize files within the input folder.
 4. resolution_folders: Define custom folder names and resolution thresholds.
 5. sort_method:
-  **resolution: Sort by image resolution.**
-  **orientation: Categorize into portrait, landscape, or square.**
+  **resolution: Sort by image resolution.**  
 6. dynamic_thresholds: Automatically handle resolutions outside defined thresholds.
 
 ## Features
 ### Sorting
 Categorize images based on:
-
 #### Resolution: Total pixels (width × height).
-#### Orientation: portrait, landscape, or square.
 
 ### File Operations
 Move or copy files while avoiding duplicates.
@@ -130,6 +127,7 @@ Delete and recreate the venv folder:
 python install_cs.py
 
 ## Future Features
+Add functionality to sort by orientation
 Add undo functionality to reverse file operations based on a log.
 Enhance configuration validation and error reporting.
 
