@@ -1,0 +1,2 @@
+background:: grass;, 
+Steps: 20, Sampler: DPM++ 2M, Schedule type: Karras Exponential, CFG scale: 7, Seed: 114982312043, Size: 960x640, Model hash: 989b125599, Model: Qasar_anireal, Clip skip: 2, Hypertile U-Net: True, Version: v1.10.1, Hashes: {"model": "989b125599"}
