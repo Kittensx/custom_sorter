@@ -30,7 +30,6 @@ resolution_folders:
 
 # Method to sort files:
 # - resolution: Files are sorted based on their total pixels (width * height).
-# - orientation: Files are sorted into `portrait`, `landscape`, or `square` based on their dimensions.
 sort_method: orientation
 
 # Enable dynamic thresholds for superlow and superhigh categories.
