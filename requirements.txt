@@ -1,5 +1,6 @@
-pillow
 filelock
 psutil
 send2trash
+tqdm
+pillow
 pyyaml
