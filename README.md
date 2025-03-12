@@ -2,6 +2,8 @@
 # Last Updated 3/12/2025
 # Changelog
 
+# Requires EXIFTOOL for metadata scanning: https://exiftool.org/
+
 ## [Latest Version] - 2025-03-12
 ### **🚀 New Features**
 - **Enhanced Sorting Capabilities**
@@ -10,7 +12,12 @@
     - **Resolution-based sorting** (categorizes images based on resolution thresholds)
     - **Orientation-based sorting** (groups images based on portrait/landscape orientation)
   - Configurable **sort order**: Users can specify sorting priorities in `config.yaml`.
-
+  - Can now sort using multiple methods at the same time. In the config file you specify exactly what you want:
+  - Example: if you update these lines:
+    	sort_methods: ["metadata", "orientation", "resolution"] #metadata, orientation, resolution
+	metadata_keys: ["model", "CFG Scale"]
+	- The program would start by looking at the sort_methods and it sees that you have 3 sort methods selected. Since metadata contains "metadata_keys", and since you have 2 keys, it would sort first by model and then by CFG Scale.  Then it would look at the next method in sort_methods, which is "orientation" and would sort into either portrait or landscape. Finally, it would sort according to your resolution folder settings (hires, lores, etc). If sorting varied files you may want to use multiple methods. If sorting a smaller folder you may want to just use one. I like keeping my models seperate so I generally just sort by models. But you can sort by anything at the moment in the metadata, except by prompts. I plan to add this method in the next version.
+    
 - **Improved Metadata Extraction**
   - **Enhanced `MetadataExtractor`**:
     - Extracts metadata using ExifTool (primary method).
