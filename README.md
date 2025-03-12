@@ -1,10 +1,66 @@
 # Custom Sorter Program
+# Last Updated 3/12/2025
+# Changelog
+
+## [Latest Version] - 2025-03-12
+### **🚀 New Features**
+- **Enhanced Sorting Capabilities**
+  - Added support for **multiple sorting methods**, including:
+    - **Metadata-based sorting** (sorts based on extracted metadata fields, such as model name, sampler, etc.)
+    - **Resolution-based sorting** (categorizes images based on resolution thresholds)
+    - **Orientation-based sorting** (groups images based on portrait/landscape orientation)
+  - Configurable **sort order**: Users can specify sorting priorities in `config.yaml`.
+
+- **Improved Metadata Extraction**
+  - **Enhanced `MetadataExtractor`**:
+    - Extracts metadata using ExifTool (primary method).
+    - Falls back to parsing `.txt` sidecar files when ExifTool fails.
+    - Stores extracted metadata in JSON format for better accessibility.
+  - **New `PromptFilter` module**:
+    - Cleans and structures metadata fields.
+    - Preserves positive and negative prompts as lists instead of strings.
+
+### **🛠 Improvements**
+- **Refactored `sort_images_and_texts()`**:
+  - Now **stores metadata in memory** before sorting, improving performance.
+  - Ensures that files are **only processed once**.
+  - Debugging logs added for better tracking of file movements.
+- **Refactored `sort_by_metadata()`**:
+  - Now **creates folders dynamically** based on extracted metadata values.
+  - Handles cases where metadata keys are missing or contain invalid characters.
+  - Debug logs added to track file movement and sorting errors.
+- **Recursive scanning reworked**:
+  - Option to enable/disable recursive scanning in `config.yaml`.
+  - `max_depth` setting allows users to control how deep folder scanning goes.
+
+### **🐛 Bug Fixes**
+- **Fixed incorrect metadata formatting**:
+  - `positive_prompts` and `negative_prompt` now **always remain lists**.
+  - Previously stored as strings, causing issues in metadata-based sorting.
+- **Fixed issue where sorting did not trigger correctly**:
+  - Ensured `sort_images_and_texts()` correctly calls `sort_by_metadata()`.
+  - Added debug logs to trace sorting failures.
+- **Fixed file locking issue**:
+  - Implemented a **file lock check** before moving files to prevent failures when files are open in another process.
+
+### **🔧 Configuration Updates**
+- `config.yaml` now supports:
+  - `sort_methods`: Allows users to specify multiple sorting methods.
+  - `metadata_keys`: Defines which metadata fields should be used for sorting.
+  - `use_recursive_scan`: Improved handling of `true`/`false`, supporting values like "yes", "no", "1", "0".
+
+---
+
+### **Previous Versions**
+For earlier changelogs, visit the [GitHub repository](https://github.com/Kittensx/custom_sorter).
 
 ## Overview
 The Custom Sorter Program is a Python-based file organization tool designed to sort and manage images and text files into categorized folders based on user-defined configurations. It supports advanced features like resolution-based sorting, retry mechanisms for file operations, and cleaning up input folders.
 
 ## Features
 - **Sort by resolution**: Categorizes files into user-defined resolution thresholds.
+- **Sort by orientation**: (new!!) Now sorts into portrait or landscape
+- **Sort by Metadata**: (new!!) Using Exifreader for images, can sort with metadata (requires Exifreader)
 - **Dynamic thresholds**: Supports flexible sorting based on custom configurations.
 - **Organize in place or move**: Choose whether to organize files within the input folder or move them to an output folder.
 - **Retry mechanism**: Automatically retries file operations on failure.
