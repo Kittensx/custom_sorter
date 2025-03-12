@@ -1,41 +1,36 @@
 # Configuration file for Custom Sorter Program
 
-# Input folders to process.
-# Provide one or more folder paths. Paths can use single quotes ('') or double quotes ("") for Windows compatibility.
-# Example formats:
-# - 'C:\\path\\to\\input_folder' (Windows-style)
-# - "path/to/input_folder" (POSIX-style)
-input_folders:
-  - 'test_input' # Default folder for testing. Replace this with your own folder paths.
+# Input folder for testing
+input_folders:  
+  #- 'D:\custom_sorter\files needed\test'
+  - '' #insert name of folder here. Add as many folders in the input folder as you want.
 
-# Output folder where sorted files will be moved.
-# Leave empty or set `use_output_folder: false` to organize files in place (within input folders).
-output_folder: "test_output"
 
-# Whether to move files to the output folder or organize them in place.
-# Options:
-# - true: Files are moved to the output folder.
-# - false: Files are sorted within their original locations. READ FIRST.MD has important information please read before changing this to false.
-use_output_folder: true
+# Metadata key for sorting by metadata (if applicable)
+metadata_key: "model"
 
-# Resolution-based folder categories. Each key defines a folder, and its value specifies the maximum resolution (width x height) for that folder.
-# Resolutions are checked in ascending order. The first matching category will be used.
-# You can add or remove categories as needed.
-resolution_folders:  
-  superlow: "0x0"          # Files with the lowest resolutions.
-  lores: "512x512"         # Files <= 512x512 resolution.
-  medres: "640x960"        # Files <= 640x960 resolution.
-  hires: "1080x1920"       # Files <= 1080x1920 resolution.
-  superhigh: "99999x99999" # Files with the highest resolutions.
+#Note - if sorting by boolean value keys (true/false) it currently sorts into a folder with that value "true" or "false" -- you probably won't want to sort by this metadata_key until we fix this issue. But you can sort by any other item in your metadata. 
 
-# Method to sort files:
-# - resolution: Files are sorted based on their total pixels (width * height).
-sort_method: orientation
+sort_methods: ["metadata"] #metadata, orientation, resolution
+metadata_keys: ["model"] #metadata fields like model, steps, seed, etc. Use commas to seperate. Folders are created in the order used.
 
-# Enable dynamic thresholds for superlow and superhigh categories.
-# If true:
-# - Adds "superlow" for files smaller than the smallest resolution category.
-# - Adds "superhigh" for files larger than the largest resolution category.
-# If false:
-# - Files that don't fit any category are placed in an "other" folder.
+
+# Whether to move files to the output folder or organize them in place
+use_output_folder: false
+
+# Output folder where sorted files will be moved
+output_folder: "D:/custom_sorter/files needed/test/test_output"
+
+# Resolution-based folder categories (adjust as needed)
+resolution_folders:
+  superlow: "0x0"
+  lores: "640x960"
+  medres: "960x1440"
+  hires: "1080x1920"
+  superhigh: "99999x99999"
+
+# Enable dynamic thresholds for automatic superlow/superhigh assignment
 dynamic_thresholds: false
+
+
+
