@@ -13,7 +13,10 @@ class ImageSorter:
     def __init__(self, input_folder, output_folder):
         self.input_folder = input_folder
         self.output_folder = output_folder
-        self.metadata_extractor = MetadataExtractor(metadata_folder=os.path.join(output_folder, "metadata"))
+        self.metadata_extractor = MetadataExtractor(
+            metadata_folder=os.path.join(output_folder, "metadata"),
+            save_metadata_json=config.get("save_metadata_json", False)
+        )
         self.metadata_dict = {}  # ✅ Store extracted metadata in the class
         self.last_sorted_folder = None # ✅ Track last used folder
         # ✅ Configure logging
