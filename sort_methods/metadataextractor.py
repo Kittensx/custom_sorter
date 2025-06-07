@@ -5,9 +5,11 @@ from sort_methods.exif import extract_exiftool_metadata
 from sort_methods.prompt_filter import PromptFilter
 
 class MetadataExtractor:
-    def __init__(self, metadata_folder=None):
+    def __init__(self, metadata_folder=None, save_metadata_json=False):
         """Initialize the metadata extractor with an optional metadata storage folder."""
         self.metadata_folder = metadata_folder  
+        self.save_metadata_json = save_metadata_json        # Default unless overridden by config
+        self.debug = False
 
     @staticmethod
     def clean_metadata_prompt(prompt):
@@ -213,6 +215,8 @@ class MetadataExtractor:
         with open(json_path, "w", encoding="utf-8") as json_file:
             json.dump({"metadata": metadata}, json_file, indent=4)
 
-        #print(f"📄 Metadata saved to: {json_path}")
+        if self.debug:
+            if self.save_metadata_json:
+                print(f"📄 Metadata saved to: {json_path}")
+                
         return {"metadata": metadata}
-
