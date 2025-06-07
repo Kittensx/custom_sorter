@@ -33,14 +33,15 @@ class CustomSorter:
         # Handle resolution_folders: Use default if missing or empty
         self.resolution_folders = self.config.get("resolution_folders", None)     
         self.dynamic_thresholds = self.config.get("dynamic_thresholds", False) #default to false to allow for customization        
-        self.imagesorter = ImageSorter(self.input_folders[0], self.output_folder) 
-        self.metadata_extractor = MetadataExtractor()  
+        self.imagesorter = ImageSorter(self.input_folders[0], self.output_folder, config=self.config) 
+        self.metadata_extractor = MetadataExtractor(config=self.config)  
         self.metadata_key = self.config.get("metadata_key", "model").lower()
         # ✅ Ensure `sort_methods` is always a list of lowercase values
         self.sort_methods = [m.lower() for m in self.config.get("sort_methods", ["metadata"])]
         # ✅ Ensure `metadata_keys` is always a list of lowercase values
         self.metadata_keys = [k.lower() for k in self.config.get("metadata_keys", ["model"])]
-       
+        self.include_subfolders = self.config.get("include_subfolders", False)
+        
         
         
         
@@ -119,105 +120,136 @@ class CustomSorter:
             print(f"Unexpected error with {self.lock_file}: {e}")
         return {}
    
-  
-   
-
+     
     def sort_images_and_texts(self):
         """Sort images and texts while keeping metadata in memory, with a progress bar."""
-        start_time=time.time()
-        metadata_dict = {}  # Store extracted metadata in memory       
+        start_time = time.time()
+        metadata_dict = {}
 
         # ✅ Count total image files for progress bar
-        total_files = sum(
-            len([f for f in files if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))])
-            for root, _, files in os.walk(self.input_folders[0])
-        )
-        sort_start_time = time.time()  # ✅ Start time tracking
+        total_files = 0
+        for input_folder in self.input_folders:
+            if self.config.get("include_subfolders", False):
+                walker = os.walk(input_folder)
+            else:
+                walker = [(input_folder, [], os.listdir(input_folder))]
+
+            for root, _, files in walker:
+                image_files = [f for f in files if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))]
+
+                if self.config.get("only_process_unsorted", True):
+                    rel_path = os.path.relpath(root, input_folder)
+                    if rel_path != ".":
+                        continue  # Skip nested folders in unsorted-only mode
+
+                total_files += len(image_files)
+
+
+        sort_start_time = time.time()
         with tqdm(total=total_files, desc="Processing Files", unit="file") as pbar:
             for input_folder in self.input_folders:
-                for root, _, files in os.walk(input_folder):          
-                    with concurrent.futures.ProcessPoolExecutor() as executor:
+                if self.config.get("include_subfolders", False):
+                    walker = os.walk(input_folder)  # 🔁 Recursive
+                else:
+                    walker = [(input_folder, [], os.listdir(input_folder))]  # 🔁 Just the top level
+                
+
+                for root, _, files in walker:  
+                    if self.config.get("only_process_unsorted", True):
+                        if any(f.endswith(".flag") for f in os.listdir(root)):
+                            if self.config.get("_debug", False):
+                                print(f"⏭️ Skipping flagged folder: {root}")
+                            continue
+                        #rel_path = os.path.relpath(root, input_folder)
+                        #if rel_path != ".":
+                        #    continue  # ⏭️ Skip files already inside a subfolder                    
+                
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
                         futures_sorting = []
-                        futures_analysis = []
+                        #futures_analysis = []
 
                         for file in files:
                             if not file.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-                                continue  # ✅ Skip non-image files
-                            
+                                continue
+
                             file_path = os.path.join(root, file)
                             metadata = self.metadata_extractor.extract_metadata(file_path)
+                    
+                            if not metadata:
+                                continue
+                             
+                            future_sort = executor.submit(
+                                self.imagesorter.process_single_image,
+                                file_path,
+                                self.config,
+                                metadata,
+                                pbar
+                            )
 
-                            if metadata:
-                                metadata_dict[file_path] = metadata  # ✅ Store metadata with full path
-
-                            # ✅ Submit sorting first
-                            future_sort = executor.submit(self.imagesorter.process_images, self.config, metadata_dict)
                             futures_sorting.append(future_sort)
 
-                        # ✅ Wait for sorting to finish before analyzing
-                        concurrent.futures.wait(futures_sorting)
-                        
-                        # ✅ End timing sorting
+                        # ✅ Real-time sorting progress
+                        for future in concurrent.futures.as_completed(futures_sorting):
+                            try:
+                                future.result()
+                            except Exception as e:
+                                print(f"❌ Error during sorting: {e}")
+                            
+
                         sort_end_time = time.time()
                         sort_duration = sort_end_time - sort_start_time
                         print(f"⏳ Sorting completed in {sort_duration:.2f} seconds.")
                         logging.info(f"Sorting completed in {sort_duration:.2f} seconds.")
-                        
 
-                        # ✅ Now set sorted folder dynamically
+                        # ✅ Determine where files were sorted to
                         sorted_folder = self.imagesorter.get_sorted_folder()
-                       
-                        
-                         # ✅ Start timing analysis
+
+                        # analysis_start_time is still needed
                         analysis_start_time = time.time()
 
-                        # ✅ Submit analysis after sorting completes
-                        for file in files:
-                            file_path = os.path.join(root, file)
-                           
+                        # 🔧 NOTE: Analysis futures are currently stubbed
+                        # for file in files:
+                        #     file_path = os.path.join(root, file)
+                        #     futures_analysis.append(executor.submit(self.ia.analyze_image, file_path))
 
-                        # ✅ Wait for analysis to complete
-                        concurrent.futures.wait(futures_analysis)
-                        
-                        # ✅ End timing analysis
-                        analysis_end_time = time.time()
-                        analysis_duration = analysis_end_time - analysis_start_time
-                        print(f"⏳ Analysis completed in {analysis_duration:.2f} seconds.")
-                        logging.info(f"Analysis completed in {analysis_duration:.2f} seconds.")
+                        # ✅ Real-time analysis progress (currently no actual jobs)
+                        '''
+                        for future in concurrent.futures.as_completed(futures_analysis):
+                            try:
+                                future.result()
+                            except Exception as e:
+                                print(f"❌ Error during analysis: {e}")
+                            pbar.update(1)
 
-                        # ✅ Log total time taken
+                        #analysis_end_time = time.time()
+                        #analysis_duration = analysis_end_time - analysis_start_time
+                        #print(f"⏳ Analysis completed in {analysis_duration:.2f} seconds.")
+                        #logging.info(f"Analysis completed in {analysis_duration:.2f} seconds.")
                         total_time = sort_duration + analysis_duration
+                        '''
+                        total_time = sort_duration
                         print(f"✅ Total processing time: {total_time:.2f} seconds.")
                         logging.info(f"Total processing time: {total_time:.2f} seconds.")
-                        
 
-                        pbar.update(len(files))
+        #print("✅ Sorting & Analysis completed in parallel!")
 
-            print("✅ Sorting & Analysis completed in parallel!")
+        end_time = time.time()
+        elapsed_time = end_time - start_time        
 
-
-
-            end_time = time.time()  # ✅ End time tracking
-            elapsed_time = end_time - start_time  # ✅ Calculate total time taken                        
-            print("\nAssigning to Queue")
-            self.queue_manager.process_queue()
-            #print("Running Queue Manager")
-            # Wait briefly to ensure all files are processed and locks are released
+        try:
+            post_processor = PostProcessingManager(self.input_folders, self.output_folder)
+            post_processor.compare_and_clean()
+        except PermissionError as e:
+            print(f"PermissionError during post-processing: {e}")
+            self.terminate_locking_process(file_path)
             time.sleep(2)
-                
             try:
-                # Run post-processing to clean up input folders
-                post_processor = PostProcessingManager(self.input_folders, self.output_folder)
                 post_processor.compare_and_clean()
-            except PermissionError as e:
-                print(f"PermissionError during post-processing: {e}")
-                terminate_locking_process(file_path)
-                time.sleep(2)  # Delay before retry
-                try:
-                    post_processor.compare_and_clean()  # Retry after clearing locks
-                except Exception as retry_error:
-                    print(f"Failed post-processing even after retry: {retry_error}")
-            print(f"\n✅ Processed {total_files} files in {elapsed_time:.2f} seconds.\n")
+            except Exception as retry_error:
+                print(f"Failed post-processing even after retry: {retry_error}")
+
+        print(f"\n✅ Processed {total_files} files in {elapsed_time:.2f} seconds.\n")
+
            
            
 
