@@ -3,10 +3,74 @@
 # Changelog
 ## [Latest Version]- 2025-6-7
 ### **🚀 New Features**
-- Changed default behavior for metadata printing
-  -  Now disabled by default unless changed to "true" in config.
-  -  What this means: Faster sorting because no text files are being created
-  -  Now only creates the metadata for the images when the user wants it.
+# ✅ New Config Options (2025-06-07)
+
+---
+
+## 🟩 `save_metadata_json: false`
+
+**Purpose:**  
+Controls whether metadata files (in `.yaml`) are saved for each image during sorting. Ignore the name of the variable and just go with it :-)
+
+**How to use:**
+- `true` → Creates a metadata file for each image, saved alongside or in a `metadata/` folder.
+- `false` → No extra files created.
+
+---
+
+## 🟩 `file_move_threads: "auto"`
+
+**Purpose:**  
+Optimizes how quickly files are moved during sorting using multithreading.
+
+**How it works:**
+- `"auto"` → Detects drive type:
+  - SSD ➝ uses 8 threads
+  - HDD ➝ uses 3 threads
+- You can also manually set it:
+
+```yaml
+file_move_threads: 6
+```
+A safety check has been added to ensure you don't fail because threads are negative, 0, or more than your system can handle. If you don't need to control threading, I'd recommend to leave it on auto. Power Users can configure it as they like.
+
+---
+
+## 🟩 `include_subfolders: true`
+
+**Purpose:**  
+Controls whether the program processes files in subfolders of your `input_folder`.
+
+### When set to `true`:
+- The program **recursively looks inside all subfolders**.
+- It **only processes folders that do not have a `.sorted.flag`** file.
+- Useful when you want to continually drop new folders into your input folder and let the sorter handle them all.
+
+### When set to `false`:
+- Only the **top-level folder** is scanned.
+- Subfolders are ignored completely.
+- Best used when you're manually managing subfolders or only want to sort "unsorted" new files you just dropped in.
+
+---
+
+## 🏷️ How the `.sorted.flag` System Works
+
+### What it does:
+- After sorting files into a folder (e.g. `portrait/`), the system writes a `.sorted.flag` file inside that folder.
+- This flag acts as a marker: “🛑 Do not sort anything here again.”
+
+### How it’s used:
+- During future runs, if `include_subfolders: true`, the sorter checks for `.sorted.flag` in each subfolder.
+- If the flag **exists**, that folder is **skipped entirely** (no metadata read required).
+- If the flag **does not exist**, the folder and its images **will be sorted**.
+
+### When to delete `.sorted.flag`:
+- If you want to reprocess/re-sort a folder for any reason, **just delete the `.sorted.flag` file** inside it.
+- Next time the sorter runs, that folder will be treated as new.
+
+
+
+
 # Updated 3/12/2025
 # Changelog
 
