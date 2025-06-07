@@ -32,5 +32,5 @@ resolution_folders:
 # Enable dynamic thresholds for automatic superlow/superhigh assignment
 dynamic_thresholds: false
 
-
-
+# Set to true to enable .json metadata file creation (default is now false unless changed below)
+save_metadata_json: false  #
