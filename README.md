@@ -1,10 +1,18 @@
 # Custom Sorter Program
-# Last Updated 3/12/2025
+# Last Updated 
+# Changelog
+## [Latest Version]- 2025 6-7
+### **🚀 New Features**
+- Changed default behavior for metadata printing
+  -  Now disabled by default unless changed to "true" in config.
+  -  What this means: Faster sorting because no text files are being created
+  -  Now only creates the metadata for the images when the user wants it.
+# Updated 3/12/2025
 # Changelog
 
 # Requires EXIFTOOL for metadata scanning: https://exiftool.org/
 
-## [Latest Version] - 2025-03-12
+## [Version] - 2025-03-12
 ### **🚀 New Features**
 - **Enhanced Sorting Capabilities**
   - Added support for **multiple sorting methods**, including:
