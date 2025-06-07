@@ -1,7 +1,7 @@
 # Custom Sorter Program
 # Last Updated 
 # Changelog
-## [Latest Version]- 2025 6-7
+## [Latest Version]- 2025-6-7
 ### **🚀 New Features**
 - Changed default behavior for metadata printing
   -  Now disabled by default unless changed to "true" in config.
