@@ -4,3 +4,4 @@ send2trash
 tqdm
 pillow
 pyyaml
+wmi
