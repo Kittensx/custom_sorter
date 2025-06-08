@@ -3,26 +3,59 @@ import json
 import glob
 import re
 import logging
+from datetime import datetime
 from sort_methods.metadataextractor import MetadataExtractor
 from sort_methods.sort_by_metadata import sort_by_metadata
 from sort_methods.sort_by_orientation import get_orientation_folder
 from sort_methods.sort_by_resolution import get_resolution_folder
-from sort_methods.file_mover import move_file
+from sort_methods.file_mover import move_file, move_files
+from scripts.cs_queue import QueueManager 
 
 class ImageSorter:
-    def __init__(self, input_folder, output_folder):
+    def __init__(self, input_folder, output_folder, config):       
+        self.config = config
+        self.queue_manager = QueueManager()        
         self.input_folder = input_folder
-        self.output_folder = output_folder
+        self.output_folder = output_folder                
+        metadata_folder = os.path.join(output_folder, "metadata")
         self.metadata_extractor = MetadataExtractor(
-            metadata_folder=os.path.join(output_folder, "metadata"),
-            save_metadata_json=config.get("save_metadata_json", False)
+            config=config,
+            metadata_folder=metadata_folder            
         )
+        self.debug = config.get("_debug", False)
+        self.count = 0
+        if self.count <=0:
+            if self.debug:
+                #print("Image Sorter [DEBUG] Received config keys:", list(config.keys()))
+                #print("save_metadata_json =", config.get("save_metadata_json"))
+                print("debug for ImageSorter has been enabled")
+            self.count +=1
+                
+
+
         self.metadata_dict = {}  # ✅ Store extracted metadata in the class
         self.last_sorted_folder = None # ✅ Track last used folder
         # ✅ Configure logging
         logging.basicConfig(filename="file_movement.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+        
+        self.file_move_threads = config.get("file_move_threads", "auto")
+        self.debug = config.get("_debug", False)
+        self.processed_files = set()  # ✅ Track base filenames already sorted
 
 
+    
+        
+    def process_single_image(self, file_path, config, metadata, pbar=None):
+        """Process one image using its own metadata."""
+        self.metadata_dict = {
+            file_path: {"metadata": metadata.get("metadata", {})}  # ⬅ ensures same structure as bulk call
+        }
+        self.multi_sort(file_path, config, self.output_folder, pbar=pbar)
+        
+        # ✅ Clear after use to avoid cross-contamination
+        self.metadata_dict.clear()
+
+        
     def process_images(self, config, metadata_dict):
         """Process images using metadata stored in memory."""
         
@@ -42,31 +75,34 @@ class ImageSorter:
                 continue  # Skip this file if metadata loading fails
 
             # ✅ Process the image based on extracted metadata
-            self.multi_sort(image_path, config, self.output_folder)
+            self.multi_sort(image_path, config, self.output_folder, pbar=pbar)
 
     def get_metadata(self, image_path):
         """Retrieve metadata for a specific image."""
         return self.metadata_dict.get(image_path, {})
 
-    def multi_sort(self, image_path, config, output_folder):
+    def multi_sort(self, image_path, config, output_folder, pbar=None):
         """
         Sort images using stored metadata.
         """
         if not os.path.exists(image_path):
-            #print(f"⚠️ File does not exist (path issue?): {image_path}")
+            if self.debug:
+                print(f"⚠️ File does not exist (path issue?): {image_path}")
             return
 
         # ✅ Retrieve metadata for this image
         metadata = self.get_metadata(image_path)
 
         if not metadata:
-            #print(f"⚠️ No metadata available for {image_path}, skipping sorting.")
+            if self.debug:
+                print(f"⚠️ No metadata available for {image_path}, skipping sorting.")
             return
 
         # ✅ Ensure we're accessing the correct metadata values
         metadata_values = metadata.get("metadata", {})  # Extract nested metadata dictionary
 
-        #print(f"🔍 Sorting {image_path} using metadata: {metadata_values.keys()}")
+        if self.debug:
+            print(f"🔍 Sorting {image_path} using metadata: {metadata_values.keys()}")
 
         # ✅ Retrieve sorting configuration
         sort_methods = config.get("sort_methods", [])
@@ -98,21 +134,70 @@ class ImageSorter:
             sorted_folder = os.path.join(output_folder, *sorting_criteria)
         else:
             sorted_folder = os.path.join(os.path.dirname(image_path), *sorting_criteria)  # ✅ Keep files in-place
+        
+        ##### codeblock for safety check does not stop it from sorting into the same named folder.
+        sorted_base = os.path.basename(sorted_folder).lower()
+        rel_path = os.path.relpath(os.path.dirname(image_path), self.input_folder).lower()
+        subfolders = rel_path.split(os.sep)
 
+        if self.config.get("only_process_unsorted", True):
+            if len(subfolders) == 1 and subfolders[0] == sorted_base:
+                if self.debug:
+                    print(f"⏭️ Skipping redundant re-sort from {rel_path} to {sorted_base}")
+                return
+
+        # ✅ Early exit if image is already inside its sorted target folder
+        if os.path.commonpath([image_path, sorted_folder]) == os.path.abspath(sorted_folder):
+            print(f"⚠️ Skipping {image_path} (already sorted to {sorted_folder})")
+            return
+        #####
         os.makedirs(sorted_folder, exist_ok=True)
+        
+
 
         # ✅ Track last sorted folder for logging
         self.last_sorted_folder = sorted_folder
         
         # ✅ Move all associated files (image, JSON, text)
         base_name, _ = os.path.splitext(image_path)
-        associated_files = glob.glob(f"{base_name}.*")  # ✅ Match all files with the same base name
+        
+        # ✅ Avoid processing the same base file multiple times
+        if base_name in self.processed_files:
+            if self.debug:
+                print(f"⚠️ Skipping duplicate processing for: {base_name}")
+            return
+        self.processed_files.add(base_name)
 
-        for file_path in associated_files:
-            move_file(file_path, sorted_folder)  # ✅ Move all associated files
-            #print(f"✅ Sorted {image_path} → {sorted_folder}")
-            logging.info(f"Moved: {file_path} ➝ {sorted_folder}")  # ✅ Write to log file
+        associated_files = glob.glob(f"{base_name}.*")  # ✅ Match all files with the same base name
+        #associated_files = [image_path]
+
+        # ✅ Move all files at once using the fast batch method
+        move_files(associated_files, sorted_folder, threads=self.file_move_threads, verbose=self.debug, pbar=pbar)
+        
+        # ✅ After successful move, mark folder as sorted
+        flag_path = os.path.join(sorted_folder, ".sorted.flag")
+        
+        try:
+            # Only create the flag if it doesn't already exist
+            if not os.path.exists(flag_path):
+                try:
+                    with open(flag_path, "w") as f:
+                        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        f.write(f"This folder was sorted successfully.\nTimestamp: {timestamp}\n")
+                    if self.debug:
+                        print(f"✅ Flag created: {flag_path}")
+                except Exception as e:
+                    print(f"⚠️ Failed to create flag in {sorted_folder}: {e}")
+            else:
+                if self.debug:
+                    print(f"⚠️ Flag already exists, skipping creation: {flag_path}")
+
+            for file_path in associated_files:
+                logging.info(f"Moved: {file_path} ➝ {sorted_folder}")
             
+        except Exception as outer_e:
+            print(f"❌ Error during post-sort flag or logging block: {outer_e}")
+        
     def get_sorted_folder(self):
         """Return the last used sorted folder."""
         return self.last_sorted_folder if self.last_sorted_folder else None
