@@ -5,12 +5,16 @@ from sort_methods.exif import extract_exiftool_metadata
 from sort_methods.prompt_filter import PromptFilter
 
 class MetadataExtractor:
-    def __init__(self, metadata_folder=None, save_metadata_json=False):
-        """Initialize the metadata extractor with an optional metadata storage folder."""
+    def __init__(self, config, metadata_folder=None):
+        """Initialize the metadata extractor with an optional metadata storage folder."""       
+        self.config = config or {}
         self.metadata_folder = metadata_folder  
-        self.save_metadata_json = save_metadata_json        # Default unless overridden by config
-        self.debug = False
-
+        self.save_metadata_json = self.config.get("save_metadata_json", False)
+        self.debug = self.config.get("_debug", False)  
+        if self.debug:
+            print("MetadataExtractor[DEBUG] Received config keys:", list(config.keys()))
+            print("save_metadata_json =", config.get("save_metadata_json"))
+        
     @staticmethod
     def clean_metadata_prompt(prompt):
         """Cleans and refines metadata prompt strings."""
@@ -206,17 +210,17 @@ class MetadataExtractor:
                 print(f"⚠️ Error decoding hashes for {image_path}. Skipping...")
 
             del metadata["Hashes"]  # ✅ Remove old string-based entry
+            
+       
+        if self.save_metadata_json:
+            # ✅ Save Extracted Metadata to JSON
+            json_filename = os.path.splitext(os.path.basename(image_path))[0] + ".json"
+            json_path = os.path.join(self.metadata_folder, json_filename) if self.metadata_folder else os.path.join(os.path.dirname(image_path), json_filename)
+            
+            os.makedirs(os.path.dirname(json_path), exist_ok=True)
+            with open(json_path, "w", encoding="utf-8") as json_file:
+                json.dump({"metadata": metadata}, json_file, indent=4)
+            if self.debug:
+               print(f"📄 Metadata saved to: {json_path}")
 
-        # ✅ Save Extracted Metadata to JSON
-        json_filename = os.path.splitext(os.path.basename(image_path))[0] + ".json"
-        json_path = os.path.join(self.metadata_folder, json_filename) if self.metadata_folder else os.path.join(os.path.dirname(image_path), json_filename)
-
-        os.makedirs(os.path.dirname(json_path), exist_ok=True)
-        with open(json_path, "w", encoding="utf-8") as json_file:
-            json.dump({"metadata": metadata}, json_file, indent=4)
-
-        if self.debug:
-            if self.save_metadata_json:
-                print(f"📄 Metadata saved to: {json_path}")
-                
         return {"metadata": metadata}
