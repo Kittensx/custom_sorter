@@ -2,6 +2,10 @@
 # Last Updated 
 # Changelog
 ## [Latest Version]- 2025-6-7
+# Install / Update
+If installing into the same folder, download the changed files. Run update_venv.bat inside the same folder. It will activate the venv and update your venv with the new requirements (we added wmi which is a program used with windows and checking what kind of harddrive you're using. This is a program that is core to how file_mover.py works). 
+
+If installing new, see the install instructions below.
 ### **🚀 New Features**
 # ✅ New Config Options (2025-06-07)
 
