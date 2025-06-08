@@ -33,7 +33,7 @@ resolution_folders:
 dynamic_thresholds: false
 
 # Set to true to enable .json metadata file creation (default is now false unless changed below)
-save_metadata_json: false  #
+save_metadata_json: false   
 
 # "auto" dynamically selects thread count based on drive type: uses 8 threads for SSDs, 3 threads for HDDs. 
 # You can also manually set this to a specific number (e.g. 4, 6, 12) to control the number of threads used for file moves.
